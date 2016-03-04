@@ -26,10 +26,12 @@ int YEndSensor = A10;
 
 int TestSensor = 49;
 
+char PosInfo[64];
+
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   delay(20);
-  
+
   pinMode(TestSensor, INPUT);
 
   m_Controller.Initialize();
@@ -49,7 +51,7 @@ void setup() {
   x2_Motor.MinPin = X2StartSensor;
   x2_Motor.MaxPin = X2EndSensor;
   x2_Motor.Initialize();
-  
+
   z1_Motor.IsInverted = false;
   z1_Motor.SetDwellSpeed(5);
   z1_Motor.ShortDistance = 20000;
@@ -79,68 +81,99 @@ void setup() {
   z1_Motor.SetMaxSpeed(400);
   z2_Motor.SetMaxSpeed(300);
   y_Motor.SetMaxSpeed(150);
-  
+
   x1_Motor.SetSpeed(200);
   x2_Motor.SetSpeed(200);
   z1_Motor.SetSpeed(400);
   z2_Motor.SetSpeed(300);
   y_Motor.SetSpeed(150);
-  
+
   m_Controller.Motors[0] = z1_Motor;
   m_Controller.Motors[1] = z2_Motor;
   m_Controller.Motors[2] = x1_Motor;
   m_Controller.Motors[3] = x2_Motor;
   m_Controller.Motors[4] = y_Motor;
-  
+
   /*x1_Motor.SetSpeed(200);
-  x2_Motor.SetSpeed(200);
-  z1_Motor.SetSpeed(300);
-  z2_Motor.SetSpeed(200);
-  y_Motor.SetSpeed(300);*/
-  
+   x2_Motor.SetSpeed(200);
+   z1_Motor.SetSpeed(300);
+   z2_Motor.SetSpeed(200);
+   y_Motor.SetSpeed(300);*/
+
   delay(1000);
-  
+
   //m_Controller.LinearMove(90000, 60000, z2_Motor, x2_Motor);
   //m_Controller.LinearMove(-90000, -60000, z2_Motor, x2_Motor);
-  
-   
+
+
   m_Controller.ForwardOffset();
   m_Controller.BackOffset();
+  
+  //attachCoreTimerService(MyCallback);
 }
 
 void loop() {
+  /*first = micros();
+  Serial.println("X");
+  last = micros();
+  Serial.print("Time subtract is: ");
+  Serial.println(last - first);
   
-  /*int ySwitchState = digitalRead(x1_Motor.MinPin);
-  //int xEndSwitchState = digitalRead(x1_Motor.MaxPin);
-  
+  delay(2000);*/
 
-  Serial.print(x1_Motor.MinPin);
-  Serial.print(": ");
-  Serial.println(ySwitchState);*/
-
-  
-  //
-  //Serial.println(xEndSwitchState);
-  
   /*if (Serial.available()) {
      char m_Read = Serial.read();
-    
-     if (m_Read == 'A') {
-        m_Controller.Move(5000, z2_Motor);
-     }
-     else if (m_Read == 'B') {
-        m_Controller.Move(-5000, z2_Motor); 
-     }
+     Serial.print("Reply: ");
+     Serial.println(m_Read); 
+     
+     /*if (m_Read == 'A')
+       m_Controller.Move(50000, x2_Motor);
+     if (m_Read == 'B')
+       m_Controller.Move(-50000, x2_Motor);
   }*/
+  
+  //m_Controller.Move(50000, x2_Motor);
+  //m_Controller.Move(-50000, x2_Motor);
+  
+  /*int ySwitchState = digitalRead(x1_Motor.MinPin);
+   //int xEndSwitchState = digitalRead(x1_Motor.MaxPin);
+   
+   
+   Serial.print(x1_Motor.MinPin);
+   Serial.print(": ");
+   Serial.println(ySwitchState);*/
+
+
+  //
+  //Serial.println(xEndSwitchState);
+
+  /*if (Serial.available()) {
+   char m_Read = Serial.read();
+   
+   if (m_Read == 'A') {
+   m_Controller.Move(5000, z2_Motor);
+   }
+   else if (m_Read == 'B') {
+   m_Controller.Move(-5000, z2_Motor); 
+   }
+   }*/
   /* TEST MOVEMETNT
    m_Controller.Move(200000, y_Motor);
    m_Controller.Move(-200000, y_Motor);
    
-   /*m_Controller.LinearMove(90000, 60000, z1_Motor, x1_Motor);
+  /*m_Controller.LinearMove(90000, 60000, z1_Motor, x1_Motor);
    m_Controller.LinearMove(-90000, -60000, z1_Motor, x1_Motor);
    
    m_Controller.LinearMove(90000, 60000, z2_Motor, x2_Motor);
    m_Controller.LinearMove(-90000, -60000, z2_Motor, x2_Motor);*/
 }
+
+/*uint32_t MyCallback(uint32_t currentTime) {
+  
+  
+  
+  return (currentTime + CORE_TICK_RATE * 100);
+}*/
+
 
 
