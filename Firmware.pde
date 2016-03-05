@@ -106,9 +106,9 @@ void setup() {
   //m_Controller.LinearMove(-90000, -60000, z2_Motor, x2_Motor);
 
 
-  m_Controller.ForwardOffset();
-  m_Controller.BackOffset();
-  
+  //m_Controller.ForwardOffset();
+  //m_Controller.BackOffset();
+
   //attachCoreTimerService(MyCallback);
 }
 
@@ -116,10 +116,15 @@ String incomingData = "";
 void loop() {
   if (Serial.available()) {
     char c = Serial.read();
-    
     incomingData += c;
   }
+  if (incomingData.endsWith(";")) {
+    incomingData.replace(";", "");
+    Serial.println(incomingData); 
+    incomingData = "";
+  }
 }
+
 
 
 
