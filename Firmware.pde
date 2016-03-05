@@ -112,68 +112,14 @@ void setup() {
   //attachCoreTimerService(MyCallback);
 }
 
+String incomingData = "";
 void loop() {
-  /*first = micros();
-  Serial.println("X");
-  last = micros();
-  Serial.print("Time subtract is: ");
-  Serial.println(last - first);
-  
-  delay(2000);*/
-
-  /*if (Serial.available()) {
-     char m_Read = Serial.read();
-     Serial.print("Reply: ");
-     Serial.println(m_Read); 
-     
-     /*if (m_Read == 'A')
-       m_Controller.Move(50000, x2_Motor);
-     if (m_Read == 'B')
-       m_Controller.Move(-50000, x2_Motor);
-  }*/
-  
-  //m_Controller.Move(50000, x2_Motor);
-  //m_Controller.Move(-50000, x2_Motor);
-  
-  /*int ySwitchState = digitalRead(x1_Motor.MinPin);
-   //int xEndSwitchState = digitalRead(x1_Motor.MaxPin);
-   
-   
-   Serial.print(x1_Motor.MinPin);
-   Serial.print(": ");
-   Serial.println(ySwitchState);*/
-
-
-  //
-  //Serial.println(xEndSwitchState);
-
-  /*if (Serial.available()) {
-   char m_Read = Serial.read();
-   
-   if (m_Read == 'A') {
-   m_Controller.Move(5000, z2_Motor);
-   }
-   else if (m_Read == 'B') {
-   m_Controller.Move(-5000, z2_Motor); 
-   }
-   }*/
-  /* TEST MOVEMETNT
-   m_Controller.Move(200000, y_Motor);
-   m_Controller.Move(-200000, y_Motor);
-   
-  /*m_Controller.LinearMove(90000, 60000, z1_Motor, x1_Motor);
-   m_Controller.LinearMove(-90000, -60000, z1_Motor, x1_Motor);
-   
-   m_Controller.LinearMove(90000, 60000, z2_Motor, x2_Motor);
-   m_Controller.LinearMove(-90000, -60000, z2_Motor, x2_Motor);*/
+  if (Serial.available()) {
+    char c = Serial.read();
+    
+    incomingData += c;
+  }
 }
-
-/*uint32_t MyCallback(uint32_t currentTime) {
-  
-  
-  
-  return (currentTime + CORE_TICK_RATE * 100);
-}*/
 
 
 
