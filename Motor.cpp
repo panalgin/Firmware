@@ -1,5 +1,9 @@
 #include "Motor.h"
 
+#ifndef MotorController_h
+  #include "MotorController.h"
+#endif
+
 Motor::Motor() {
 }
 
@@ -104,9 +108,7 @@ void Motor::MoveTo(long absoluteTarget) {
   }
 }
 
-extern char PosInfo[64];
 char posIndex = 0;
-unsigned long lastSignaled = micros();
 
 void Motor::Step() {
   while(true) {
@@ -122,10 +124,10 @@ void Motor::Step() {
       digitalWrite(this->StepPin, LOW);
       this->CurrentPosition += this->Direction;
       this->StepsRemaining--;
-
+      
       break;
     }
-    else if (this->StepInterval - passedTime > 10 && currentTime - lastSignaled > 150) { //we have maximum of 10us cpu cycle, otherwise jitter occurs
+    /*else if (this->StepInterval - passedTime > 10 && currentTime - lastSignaled > 150) { //we have maximum of 10us cpu cycle, otherwise jitter occurs
       if (PosInfo[0] != '\0') {
         char length = strlen(PosInfo);
 
@@ -149,7 +151,7 @@ void Motor::Step() {
         if (PosInfo[0] == '\0')
           sprintf(PosInfo, "%c:%u\0", this->Axis, this->GetCurrentPosition());
       }
-    }
+    }*/
   }
 }
 

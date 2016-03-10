@@ -1,7 +1,12 @@
-#include "MotorController.h"
-#include "Motor.h"
-#include <plib.h>
+#ifndef Settings_h
+#include "Settings.h"
+#endif
 
+#ifndef MotorController_h
+#include "MotorController.h"
+#endif
+
+#include <plib.h>
 
 MotorController m_Controller;
 
@@ -27,10 +32,6 @@ int YStartSensor = A9;
 int YEndSensor = A10;
 
 int TestSensor = 49;
-
-char PosInfo[64];
-
-char __attribute__((coherent)) ramBuff[64] ;
 
 void setup() {
   Serial.begin(115200);
@@ -114,12 +115,13 @@ void setup() {
   //m_Controller.BackOffset();
 
   //attachCoreTimerService(MyCallback);
+  //prepareDMA();
 
-  strcpy(ramBuff, "Hahaha\r\n\0");
-  prepareDMA();
 
-  ConfigIntTimer2(T2_ON | T2_INT_PRIOR_3);
-  OpenTimer2(T2_ON | T2_PS_1_16, 50000); // 10 ms
+  //ConfigIntTimer2(T2_ON | T2_INT_PRIOR_3);
+  //OpenTimer2(T2_ON | T2_PS_1_1, 80); // 1 us
+
+  attachCoreTimerService(MyCallback);
 }
 
 inline unsigned int __attribute__((always_inline)) _VirtToPhys(const void* p)
@@ -137,11 +139,28 @@ void loop() {
   if (incomingData.endsWith(";")) {
     incomingData.replace(";", "");
     Serial.println(incomingData); 
-    
+
+    if (incomingData == "Right") {
+      m_Controller.Move(5000, x2_Motor);
+      //m_Controller.LinearMove(5000);
+      //strcpy(RAMBUFF, "AHAHAHAHAHAH\n\0");
+    }
+    else if (incomingData == "Left") {
+      m_Controller.Move(-5000, x2_Motor);
+      //m_Controller.LinearMove(-50000, -30000, x2_Motor, z2_Motor);
+    }
+
     incomingData = "";
   }
   
-  sprintf(ramBuff, "X:%u,Y:%u\r\n", x1_Motor.GetCurrentPosition(), y_Motor.GetCurrentPosition());
+  //sprintf(RAMBUFF, "X:%u,Y:%u\n\0", x1_Motor.GetCurrentPosition(), y_Motor.GetCurrentPosition());
+
+  //strcpy(RAMBUFF, '\0');
+  /*
+  strcpy(ramBuff, "Merhaba sikik\n\0");
+   delay(2000);
+   strcpy(ramBuff, "Baya bekledik\n\0");
+   delay(20);*/
 }
 
 void prepareDMA() {
@@ -155,12 +174,12 @@ void prepareDMA() {
 
   //TODO MATCH TERMINATION PATTERN
   //_UART1_TX_IRQ TX BUFFER EMPTY IRQ
-  DCH0DAT = '\0'; //0x00;
+  DCH0DAT = 0x00; //0x00;
 
   // program the transfer
-  DCH0SSA=_VirtToPhys((void*)ramBuff); // transfer source physical address
+  DCH0SSA=_VirtToPhys((void*)RAMBUFF); // transfer source physical address
   DCH0DSA=_VirtToPhys((void*)&U1TXREG); // transfer destination physical address
-  DCH0SSIZ= sizeof(ramBuff); // source size at most 200 bytes
+  DCH0SSIZ= sizeof(RAMBUFF); // source size at most 200 bytes
   DCH0DSIZ= 1; // dst size is 1 byte
   DCH0CSIZ= 1; // one byte per UART transfer request
 
@@ -172,12 +191,12 @@ void prepareDMA() {
 
   IPC9CLR=0x0000001f; // clear the DMA channel 0 priority and sub-priority
   //IPC9SET=0x00000016; // set IPL 5, sub-priority 2
-  IPC9bits.DMA0IP = 0;
-  IPC9bits.DMA0IS = 0;
-    
+  IPC9bits.DMA0IP = 0; // low priority
+  IPC9bits.DMA0IS = 0; // low subpriorty
+
   IEC1SET=0x00010000; // enable DMA channel 0 interrupt
 
-  DCH0CONbits.CHAEN = 1; //auto enable again
+  //DCH0CONbits.CHAEN = 1; //auto enable again
   DCH0CONSET=0x80; // turn channel on
   DCH0ECONbits.CFORCE = 1; //force to run 
 }
@@ -186,15 +205,54 @@ extern "C"
 {
   void __ISR(_TIMER_2_VECTOR,ipl3) playSam(void)
   {
+    if (RAMBUFF[0] != '\0') {
+      prepareDMA(); 
+      RAMBUFF[0] = '\0';
+    }
+    else {
+      DCH0CON = 0x03; 
+    }
     // initiate a transfer
     /*DCH0INTCLR=0x00ff00ff; // clear existing events disable all interrupts
      
      DCH0CONSET=0x80; // turn channel on
      DCH0ECONSET=0x00000080; // set CFORCE to 1*/
 
+    //prepareDMA();
+
     mT2ClearIntFlag();  // Clear interrupt flag
   }
 } // end extern "C"
+
+/* For the core timer callback, just toggle the output high and low
+ and schedule us for another 100uS in the future. CORE_TICK_RATE
+ is the number of core timer counts in 1 millisecond. So if we 
+ want this callback to be called every 100uS, we just divide 
+ the CORE_TICK_RATE by 10, and add it to the current time.
+ currentTime is the core timer clock time at the moment we get
+ called
+ */
+
+unsigned long oldx2Pos = 0;
+
+uint32_t MyCallback(uint32_t currentTime) {
+  if (DCH0CONbits.CHBUSY == 0) {
+    unsigned long x2Pos = x2_Motor.GetCurrentPosition();
+    
+    if (x2Pos != oldx2Pos) {
+      sprintf(RAMBUFF, "%c: %u\n", x2_Motor.Axis, x2Pos);
+      oldx2Pos = x2Pos;
+      prepareDMA();
+    }
+  }
+  else {
+    DCH0CON = 0x03; 
+  }
+
+  return (currentTime + CORE_TICK_RATE * 20); // 10 ms
+}
+
+
 
 
 
