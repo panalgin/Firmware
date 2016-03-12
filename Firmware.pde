@@ -6,9 +6,14 @@
 #include "MotorController.h"
 #endif
 
+#ifndef CommandParser_h
+#include "CommandParser.h"
+#endif
+
 #include <plib.h>
 
 MotorController m_Controller;
+CommandParser commandParser;
 
 Motor x1_Motor(9, 31, 'X');
 Motor y_Motor(5, 25, 'Y');
@@ -99,27 +104,7 @@ void setup() {
   m_Controller.Motors[3] = x2_Motor;
   m_Controller.Motors[4] = y_Motor;
 
-  /*x1_Motor.SetSpeed(200);
-   x2_Motor.SetSpeed(200);
-   z1_Motor.SetSpeed(300);
-   z2_Motor.SetSpeed(200);
-   y_Motor.SetSpeed(300);*/
-
   delay(1000);
-
-  //m_Controller.LinearMove(90000, 60000, z2_Motor, x2_Motor);
-  //m_Controller.LinearMove(-90000, -60000, z2_Motor, x2_Motor);
-
-
-  //m_Controller.ForwardOffset();
-  //m_Controller.BackOffset();
-
-  //attachCoreTimerService(MyCallback);
-  //prepareDMA();
-
-
-  //ConfigIntTimer2(T2_ON | T2_INT_PRIOR_3);
-  //OpenTimer2(T2_ON | T2_PS_1_1, 80); // 1 us
 
   attachCoreTimerService(MyCallback);
 }
@@ -138,14 +123,8 @@ void loop() {
   }
   if (incomingData.endsWith(";")) {
     incomingData.replace(";", "");
-    Serial.println(incomingData); 
 
-    if (incomingData == "Right") {
-      m_Controller.Move(5000, x2_Motor);
-    }
-    else if (incomingData == "Left") {
-      m_Controller.Move(-5000, x2_Motor);
-    }
+    commandParser.Parse(incomingData);
 
     incomingData = "";
   }
@@ -189,21 +168,12 @@ void prepareDMA() {
   DCH0ECONbits.CFORCE = 1; //force to run 
 }
 
-/* For the core timer callback, just toggle the output high and low
- and schedule us for another 100uS in the future. CORE_TICK_RATE
- is the number of core timer counts in 1 millisecond. So if we 
- want this callback to be called every 100uS, we just divide 
- the CORE_TICK_RATE by 10, and add it to the current time.
- currentTime is the core timer clock time at the moment we get
- called
- */
-
 unsigned long oldx2Pos = 0;
 
 uint32_t MyCallback(uint32_t currentTime) {
   if (DCH0CONbits.CHBUSY == 0) {
     unsigned long x2Pos = x2_Motor.GetCurrentPosition();
-    
+
     if (x2Pos != oldx2Pos) {
       sprintf(RAMBUFF, "%c: %u\n", x2_Motor.Axis, x2Pos);
       oldx2Pos = x2Pos;
@@ -211,8 +181,9 @@ uint32_t MyCallback(uint32_t currentTime) {
     }
   }
 
-  return (currentTime + CORE_TICK_RATE * 40); // 30 ms
+  return (currentTime + CORE_TICK_RATE * 40); // 40 ms
 }
+
 
 
 
