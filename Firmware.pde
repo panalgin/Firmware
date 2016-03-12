@@ -34,7 +34,7 @@ int YEndSensor = A10;
 int TestSensor = 49;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(250000);
   delay(20);
 
   pinMode(TestSensor, INPUT);
@@ -50,7 +50,7 @@ void setup() {
   x1_Motor.Initialize();
 
   x2_Motor.IsInverted = false;
-  x2_Motor.SetDwellSpeed(5);
+  x2_Motor.SetDwellSpeed(35);
   x2_Motor.ShortDistance = 20000;
   x2_Motor.RampStartsAt = x2_Motor.MaxSpeed * 0.1;
   x2_Motor.MinPin = X2StartSensor;
@@ -142,25 +142,13 @@ void loop() {
 
     if (incomingData == "Right") {
       m_Controller.Move(5000, x2_Motor);
-      //m_Controller.LinearMove(5000);
-      //strcpy(RAMBUFF, "AHAHAHAHAHAH\n\0");
     }
     else if (incomingData == "Left") {
       m_Controller.Move(-5000, x2_Motor);
-      //m_Controller.LinearMove(-50000, -30000, x2_Motor, z2_Motor);
     }
 
     incomingData = "";
   }
-  
-  //sprintf(RAMBUFF, "X:%u,Y:%u\n\0", x1_Motor.GetCurrentPosition(), y_Motor.GetCurrentPosition());
-
-  //strcpy(RAMBUFF, '\0');
-  /*
-  strcpy(ramBuff, "Merhaba sikik\n\0");
-   delay(2000);
-   strcpy(ramBuff, "Baya bekledik\n\0");
-   delay(20);*/
 }
 
 void prepareDMA() {
@@ -201,29 +189,6 @@ void prepareDMA() {
   DCH0ECONbits.CFORCE = 1; //force to run 
 }
 
-extern "C"
-{
-  void __ISR(_TIMER_2_VECTOR,ipl3) playSam(void)
-  {
-    if (RAMBUFF[0] != '\0') {
-      prepareDMA(); 
-      RAMBUFF[0] = '\0';
-    }
-    else {
-      DCH0CON = 0x03; 
-    }
-    // initiate a transfer
-    /*DCH0INTCLR=0x00ff00ff; // clear existing events disable all interrupts
-     
-     DCH0CONSET=0x80; // turn channel on
-     DCH0ECONSET=0x00000080; // set CFORCE to 1*/
-
-    //prepareDMA();
-
-    mT2ClearIntFlag();  // Clear interrupt flag
-  }
-} // end extern "C"
-
 /* For the core timer callback, just toggle the output high and low
  and schedule us for another 100uS in the future. CORE_TICK_RATE
  is the number of core timer counts in 1 millisecond. So if we 
@@ -245,11 +210,8 @@ uint32_t MyCallback(uint32_t currentTime) {
       prepareDMA();
     }
   }
-  else {
-    DCH0CON = 0x03; 
-  }
 
-  return (currentTime + CORE_TICK_RATE * 20); // 10 ms
+  return (currentTime + CORE_TICK_RATE * 40); // 30 ms
 }
 
 
