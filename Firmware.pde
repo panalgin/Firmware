@@ -123,9 +123,7 @@ void loop() {
   }
   if (incomingData.endsWith(";")) {
     incomingData.replace(";", "");
-
     commandParser.Parse(incomingData);
-
     incomingData = "";
   }
 }
