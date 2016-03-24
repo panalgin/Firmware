@@ -39,7 +39,7 @@ int YEndSensor = A10;
 int TestSensor = 49;
 
 void setup() {
-  Serial.begin(250000);
+  Serial.begin(115200);
   delay(20);
 
   pinMode(TestSensor, INPUT);

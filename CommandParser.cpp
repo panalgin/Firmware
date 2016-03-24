@@ -5,18 +5,24 @@ CommandParser::CommandParser() {
 }
 
 void CommandParser::Parse(String& text) {
-  if (text.startsWith("Hello ")) {
+  if (text.startsWith("Hello: ")) {
     Serial.println(text);
   }
-  if (text.startsWith("JogStart: ")) { // format Jog: A:-6000
+  if (text.startsWith("JogStart: ")) { // format JogStart: A:-6000
      text.replace("JogStart: ", "");
      
      char axis = text[0];
-     text.replace(axis + ":", "");
-     unsigned int length = text.length();
+     char rep[3] = "";
+     rep[0] = axis;
+     strcat(rep, ":\0");
+     
+     text.replace(rep, "");
+     
+     unsigned int length = text.length() + 1;
      char buffer[length];
      text.toCharArray(buffer, length);
      
-     unsigned long value = strtoul(buffer, 0, 0);
+     char* needle;
+     long value = strtol(buffer, &needle, 10);
   }
 }
