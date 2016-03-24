@@ -1,4 +1,9 @@
 #include "CommandParser.h"
+#ifndef MotorController_h
+  #include "MotorController.h"
+#endif
+
+extern MotorController m_Controller;
 
 CommandParser::CommandParser() {
 
@@ -8,7 +13,7 @@ void CommandParser::Parse(String& text) {
   if (text.startsWith("Hello: ")) {
     Serial.println(text);
   }
-  if (text.startsWith("JogStart: ")) { // format JogStart: A:-6000
+  else if (text.startsWith("JogStart: ")) { // format JogStart: A:-6000
      text.replace("JogStart: ", "");
      
      char axis = text[0];
@@ -24,5 +29,10 @@ void CommandParser::Parse(String& text) {
      
      char* needle;
      long value = strtol(buffer, &needle, 10);
+     
+     m_Controller.JogMove(axis, value);
+  }
+  else if (text.startsWith("JogEnd: ")) { // format JogEnd: All
+    m_Controller.Halt();
   }
 }

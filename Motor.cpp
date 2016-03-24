@@ -127,31 +127,6 @@ void Motor::Step() {
       
       break;
     }
-    /*else if (this->StepInterval - passedTime > 10 && currentTime - lastSignaled > 150) { //we have maximum of 10us cpu cycle, otherwise jitter occurs
-      if (PosInfo[0] != '\0') {
-        char length = strlen(PosInfo);
-
-        if (posIndex >= length) {
-          strcpy(PosInfo, "\0");
-          posIndex = 0;
-        }
-        else {
-          char next = PosInfo[posIndex];
-
-          if (posIndex < (length - 1))
-            Serial.print(next);
-          else
-            Serial.println(next);
-
-          lastSignaled = currentTime;
-          posIndex++;
-        }
-      }
-      else {
-        if (PosInfo[0] == '\0')
-          sprintf(PosInfo, "%c:%u\0", this->Axis, this->GetCurrentPosition());
-      }
-    }*/
   }
 }
 

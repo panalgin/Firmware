@@ -20,14 +20,17 @@ class MotorController {
     bool UseRamp;
     void Initialize();
     void Delete(Motor motor);
-    void Move(long steps, Motor& motor);
-    void MoveTo(long pos, Motor& motor);
-    void LinearMove(long steps1, long steps2, Motor& first, Motor& second);
-    void LinearMoveTo(long steps1, long steps2, Motor& first, Motor& second);
+    void Move(long steps, Motor *motor);
+    void MoveTo(long pos, Motor *motor);
+    void LinearMove(long steps1, long steps2, Motor *first, Motor *second);
+    void LinearMoveTo(long steps1, long steps2, Motor *first, Motor *second);
     void BackOffset();
     void ForwardOffset();
-    void CalculateRamp(unsigned long index, Motor& motor);
-    void CalculateRamp(unsigned long delta, unsigned long index, Motor& motor);
+    void CalculateRamp(unsigned long index, Motor * motor);
+    void CalculateRamp(unsigned long delta, unsigned long index, Motor * motor);
+    
+    void JogMove(char axis, long steps);
+    void Halt();
 
 };
 

@@ -10,9 +10,14 @@
 #include "CommandParser.h"
 #endif
 
+#ifndef DmaController_h
+#include "DmaController.h"
+#endif
+
 #include <plib.h>
 
 MotorController m_Controller;
+DmaController m_DmaController;
 CommandParser commandParser;
 
 Motor x1_Motor(9, 31, 'X');
@@ -39,7 +44,7 @@ int YEndSensor = A10;
 int TestSensor = 49;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(250000);
   delay(20);
 
   pinMode(TestSensor, INPUT);
@@ -106,12 +111,7 @@ void setup() {
 
   delay(1000);
 
-  attachCoreTimerService(MyCallback);
-}
-
-inline unsigned int __attribute__((always_inline)) _VirtToPhys(const void* p)
-{
-  return (int)p<0?((int)p&0x1fffffffL):(unsigned int)((unsigned char*)p+0x40000000L);
+  m_DmaController.Initialize();
 }
 
 String incomingData = "";
@@ -126,60 +126,6 @@ void loop() {
     commandParser.Parse(incomingData);
     incomingData = "";
   }
-}
-
-void prepareDMA() {
-  IEC1CLR = 0x00010000; // disable DMA channel 0 interrupts
-  IFS1CLR = 0x00010000; // clear any existing DMA channel 0 interrupt flag
-  DMACONSET = 0x00008000; // enable the DMA controller
-
-  DCH0CON = 0x03; // channel off, priority 3, no chaining
-  //DCH0ECON = 0; // no start irqs, no match enabled
-  DCH0ECON= (28 <<8)| 0x30; // start irq is UART1 TX, pattern match enabled
-
-  //TODO MATCH TERMINATION PATTERN
-  //_UART1_TX_IRQ TX BUFFER EMPTY IRQ
-  DCH0DAT = 0x00; //0x00;
-
-  // program the transfer
-  DCH0SSA=_VirtToPhys((void*)RAMBUFF); // transfer source physical address
-  DCH0DSA=_VirtToPhys((void*)&U1TXREG); // transfer destination physical address
-  DCH0SSIZ= sizeof(RAMBUFF); // source size at most 200 bytes
-  DCH0DSIZ= 1; // dst size is 1 byte
-  DCH0CSIZ= 1; // one byte per UART transfer request
-
-  DCH0INTCLR=0x00ff00ff; // clear existing events, disable all interrupts
-  DCH0INTSET=0x00090000; // enable Block Complete and error interrupts
-
-  DCRCCON = 0;                // crc module off
-  //DCH0INT = 0;                // interrupts disabled
-
-  IPC9CLR=0x0000001f; // clear the DMA channel 0 priority and sub-priority
-  //IPC9SET=0x00000016; // set IPL 5, sub-priority 2
-  IPC9bits.DMA0IP = 0; // low priority
-  IPC9bits.DMA0IS = 0; // low subpriorty
-
-  IEC1SET=0x00010000; // enable DMA channel 0 interrupt
-
-  //DCH0CONbits.CHAEN = 1; //auto enable again
-  DCH0CONSET=0x80; // turn channel on
-  DCH0ECONbits.CFORCE = 1; //force to run 
-}
-
-unsigned long oldx2Pos = 0;
-
-uint32_t MyCallback(uint32_t currentTime) {
-  if (DCH0CONbits.CHBUSY == 0) {
-    unsigned long x2Pos = x2_Motor.GetCurrentPosition();
-
-    if (x2Pos != oldx2Pos) {
-      sprintf(RAMBUFF, "%c: %u\n", x2_Motor.Axis, x2Pos);
-      oldx2Pos = x2Pos;
-      prepareDMA();
-    }
-  }
-
-  return (currentTime + CORE_TICK_RATE * 40); // 40 ms
 }
 
 
